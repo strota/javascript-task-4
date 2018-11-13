@@ -11,7 +11,7 @@ const isStar = false;
  * @returns {Object}
  */
 function getEmitter() {
-    const dictionary = {};
+    const events = {};
 
     function call(contexts) {
         for (let context of contexts) {
@@ -19,60 +19,35 @@ function getEmitter() {
         }
     }
 
-    function getNecessaryElements(event) {
-        return Object.keys(dictionary).map((value) => {
-            return value;
-        })
-            .filter(item => {
-                return item === event || item.startsWith(event + '.');
-            });
-    }
-
     return {
 
-        // /**
-        //  * Подписаться на событие
-        //  * @param {String} event
-        //  * @param {Object} context
-        //  * @param {Function} handler
-        //  */
         on: function (event, context, handler) {
-            if (dictionary[event]) {
-                dictionary[event].push({ function: handler, context: context });
+            if (events[event]) {
+                events[event].push({ function: handler, context });
             } else {
-                dictionary[event] = [{ function: handler, context: context }];
+                events[event] = [{ function: handler, context: context }];
             }
 
             return this;
         },
 
-        // /**
-        //  * Отписаться от события
-        //  * @param {String} event
-        //  * @param {Object} context
-        //  */
         off: function (event, context) {
-            getNecessaryElements(event).forEach(value => {
-                dictionary[value] = dictionary[value].map(valueTwo => {
-                    return valueTwo;
+            Object
+                .keys(events)
+                .filter(item => {
+                    return item === event || item.startsWith(event + '.');
                 })
-                    .filter(item => {
-                        return item.context !== context;
-                    });
-                dictionary[value] = dictionary[value].filter(
-                    person => person.context !== context);
-            });
+                .forEach(key => {
+                    events[key] = events[key]
+                        .filter(item => item.context !== context);
+                });
 
             return this;
         },
 
-        // /**
-        //  * Уведомить о событии
-        //  * @param {String} event
-        //  */
         emit: function (event) {
             while (event !== '') {
-                const contexts = dictionary[event];
+                const contexts = events[event];
                 if (contexts) {
                     call(contexts);
                 }
@@ -82,28 +57,12 @@ function getEmitter() {
             return this;
         },
 
-        // /**
-        //  * Подписаться на событие с ограничением по количеству полученных уведомлений
-        //  * @star
-        //  * @param {String} event
-        //  * @param {Object} context
-        //  * @param {Function} handler
-        //  * @param {Number} times – сколько раз получить уведомление
-        //  */
         several: function (event, context, handler, times) {
             console.info(event, context, handler, times);
 
             return this;
         },
 
-        // /**
-        //  * Подписаться на событие с ограничением по частоте получения уведомлений
-        //  * @star
-        //  * @param {String} event
-        //  * @param {Object} context
-        //  * @param {Function} handler
-        //  * @param {Number} frequency – как часто уведомлять
-        //  */
         through: function (event, context, handler, frequency) {
             console.info(event, context, handler, frequency);
 
